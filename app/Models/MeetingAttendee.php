@@ -18,4 +18,5 @@ class MeetingAttendee extends Model
         return $this->belongsTo(Meeting::class);
     }
 }
-//look in the models we put the has many , and belong for each entity , for the many to many we have a separate entity wich have 1 to 1 to each one 
+//look in the models we put the has many , and belong for each entity , 
+// for the many to many we have a separate entity wich have 1 to 1 to each one 
