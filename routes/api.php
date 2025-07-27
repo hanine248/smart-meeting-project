@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 
 Route::get('/hello', function () {
     return ['message' => 'It works!'];
@@ -14,3 +15,5 @@ Route::apiResource('meetingattendees', \App\Http\Controllers\Api\MeetingAttendee
 Route::apiResource('minutes', \App\Http\Controllers\Api\MinuteController::class);
 Route::apiResource('tasks', \App\Http\Controllers\Api\TaskController::class);
 Route::apiResource('fileattachments', \App\Http\Controllers\Api\FileAttachmentController::class);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
