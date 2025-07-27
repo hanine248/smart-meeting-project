@@ -8,13 +8,13 @@ class Task extends Model
 {
     protected $fillable = ['user_id', 'meeting_id', 'description', 'due_date'];
 
-    public function user(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function meeting(): BelongsTo
+    public function meeting()
     {
-        return $this->belongsTo(Meeting::class);
+        return $this->belongsTo(Meeting::class, 'meeting_id');
     }
 }

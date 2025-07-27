@@ -23,18 +23,18 @@ class User extends Authenticatable
         ];
     }
 
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(Role::class);
-    }
+    public function role()
+{
+    return $this->belongsTo(Role::class, 'role_id');
+}
 
-    public function meetings(): HasMany
-    {
-        return $this->hasMany(Meeting::class);
-    }
+public function meetings()
+{
+    return $this->hasMany(Meeting::class);
+}
 
-    public function tasks(): HasMany
-    {
-        return $this->hasMany(Task::class);
-    }
+public function tasks()
+{
+    return $this->hasMany(Task::class, 'user_id');
+}
 }

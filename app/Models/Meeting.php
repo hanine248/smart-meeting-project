@@ -3,7 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Room;
+use App\Models\User;
+use App\Models\Task;
+use App\Models\Minute;
+use App\Models\MeetingAttendee;
+use App\Models\FileAttachment;
 class Meeting extends Model
 {
     protected $fillable = [
