@@ -8,16 +8,19 @@ use Illuminate\Http\JsonResponse;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class UserController extends Controller
 {
+    use AuthorizesRequests;
     public function index(): JsonResponse
     {
+        $this->authorize('viewAny', User::class);
         return response()->json(User::with('role')->get());
     }
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', User::class);
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -38,11 +41,13 @@ class UserController extends Controller
 
     public function show(User $user): JsonResponse
     {
+        $this->authorize('view', $user);
         return response()->json($user->load('role'));
     }
 
     public function update(Request $request, User $user): JsonResponse
     {
+         $this->authorize('update', $user);
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
@@ -65,6 +70,7 @@ class UserController extends Controller
 
     public function destroy(User $user): JsonResponse
     {
+         $this->authorize('delete', $user);
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }

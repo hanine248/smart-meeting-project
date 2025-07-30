@@ -7,9 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Room;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class RoomController extends Controller
 {
+     use AuthorizesRequests;
     public function index(): JsonResponse
     {
         return response()->json(Room::all());
@@ -17,6 +18,7 @@ class RoomController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Room::class);
         $validator = Validator::make($request->all(), [
             'status' => 'required|string',
             'location' => 'required|string',
@@ -39,6 +41,7 @@ class RoomController extends Controller
 
     public function update(Request $request, Room $room): JsonResponse
     {
+        $this->authorize('update', $room);
         $validator = Validator::make($request->all(), [
             'status' => 'sometimes|required|string',
             'location' => 'sometimes|required|string',
@@ -56,6 +59,7 @@ class RoomController extends Controller
 
     public function destroy(Room $room): JsonResponse
     {
+        $this->authorize('delete', $room);
         $room->delete();
         return response()->json(['message' => 'Room deleted successfully']);
     }

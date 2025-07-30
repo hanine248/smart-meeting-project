@@ -20,7 +20,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // Protected routes (require Sanctum token)
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum' )->group(function () {
     Route::apiResource('users', UserController::class);
     Route::apiResource('roles', RoleController::class);
     Route::apiResource('rooms', RoomController::class);

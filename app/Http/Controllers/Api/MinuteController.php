@@ -7,16 +7,20 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Minute;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class MinuteController extends Controller
 {
+    use AuthorizesRequests;
     public function index(): JsonResponse
     {
+
+        $this->authorize('viewAny', Minute::class);
         return response()->json(Minute::with('meeting')->get());
     }
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create' ,Minute::Class);
         $validator = Validator::make($request->all(), [
             'meeting_id' => 'required|exists:meetings,id',
             'status' => 'required|in:draft,submitted,approved',
@@ -35,11 +39,14 @@ class MinuteController extends Controller
 
     public function show(Minute $minute): JsonResponse
     {
+        $this->authorize('view', $minute);
+    
         return response()->json($minute->load('meeting'));
     }
 
     public function update(Request $request, Minute $minute): JsonResponse
     {
+          $this->authorize('update' ,$minute);
         $validator = Validator::make($request->all(), [
             'status' => 'sometimes|required|in:draft,submitted,approved',
             'decision' => 'nullable|string',
@@ -58,6 +65,7 @@ class MinuteController extends Controller
 
     public function destroy(Minute $minute): JsonResponse
     {
+        $this->authorize('delete' ,$minute);
         $minute->delete();
         return response()->json(['message' => 'Minute deleted successfully']);
     }

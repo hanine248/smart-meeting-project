@@ -7,16 +7,20 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Task;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TaskController extends Controller
 {
+     use AuthorizesRequests;
     public function index(): JsonResponse
     {
+        $this->authorize('viewAny', Task::class);
         return response()->json(Task::with(['user', 'meeting'])->get());
     }
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Task::class);
         $validator = Validator::make($request->all(), [
             'description' => 'required|string',
             'due_date' => 'required|date',
@@ -34,11 +38,13 @@ class TaskController extends Controller
 
     public function show(Task $task): JsonResponse
     {
+        $this->authorize('view',$task);
         return response()->json($task->load(['user', 'meeting']));
     }
 
     public function update(Request $request, Task $task): JsonResponse
     {
+        $this->authorize('update', $task);
         $validator = Validator::make($request->all(), [
             'description' => 'sometimes|required|string',
             'due_date' => 'sometimes|required|date',
@@ -56,6 +62,7 @@ class TaskController extends Controller
 
     public function destroy(Task $task): JsonResponse
     {
+        $this->authorize('delete', $task);
         $task->delete();
         return response()->json(['message' => 'Task deleted successfully']);
     }

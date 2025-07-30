@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Meeting;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
     class MeetingController extends Controller
 {
+    use AuthorizesRequests;
     // List all meetings
     public function index(): JsonResponse
     {
@@ -20,6 +22,8 @@ use App\Models\Meeting;
     // Store a new meeting
     public function store(Request $request): JsonResponse
     {
+
+        $this->authorize('create', Meeting::class);
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -47,6 +51,7 @@ use App\Models\Meeting;
     // Update a meeting
     public function update(Request $request, Meeting $meeting): JsonResponse
     {
+         $this->authorize('update', $meeting );
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
@@ -68,6 +73,7 @@ use App\Models\Meeting;
     // Delete a meeting
     public function destroy(Meeting $meeting): JsonResponse
     {
+         $this->authorize('delete', $meeting);
         $meeting->delete();
         return response()->json(['message' => 'Meeting deleted successfully']);
     }
