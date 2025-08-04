@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\MeetingAttendeeController;
 use App\Http\Controllers\Api\MinuteController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\FileAttachmentController;
+Route::get('/test', function () {
+    return response()->json(['message' => 'Hello from Laravel!']);
+});
 
 Route::get('/hello', function () {
     return ['message' => 'It works!'];

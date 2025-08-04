@@ -15,6 +15,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
     // List all meetings
     public function index(): JsonResponse
     {
+        this->authorize('viewAny',Meeting::class);
         $meetings = Meeting::with(['room', 'user', 'attendees.user', 'minute', 'tasks'])->get();
         return response()->json($meetings);
     }
