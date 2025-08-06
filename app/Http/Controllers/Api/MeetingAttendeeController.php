@@ -18,22 +18,36 @@ class MeetingAttendeeController extends Controller
         return response()->json(MeetingAttendee::with(['user', 'meeting'])->get());
     }
 
-    public function store(Request $request): JsonResponse
-    {
-        $this->authorize('create', MeetingAttendee::class);
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-            'meeting_id' => 'required|exists:meetings,id',
-            'status' => 'required|in:attended,absent',
-        ]);
+   public function store(Request $request): JsonResponse
+{
+    $request->merge(['user_id' => $request->user()->id]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+    $this->authorize('create', MeetingAttendee::class);
 
-        $attendee = MeetingAttendee::create($validator->validated());
-        return response()->json($attendee, 201);
+    $validator = Validator::make($request->all(), [
+        'user_id' => 'required|exists:users,id',
+        'meeting_id' => 'required|exists:meetings,id',
+        'status' => 'nullable|in:attended,absent',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+    // Prevent duplicate subscription
+    $exists = MeetingAttendee::where('user_id', $request->user_id)
+        ->where('meeting_id', $request->meeting_id)
+        ->exists();
+
+    if ($exists) {
+        return response()->json(['message' => 'Already subscribed'], 409);
+    }
+
+    $attendee = MeetingAttendee::create($validator->validated());
+
+    return response()->json($attendee, 201);
+}
+
 
     public function show(MeetingAttendee $meetingattendee): JsonResponse
     {

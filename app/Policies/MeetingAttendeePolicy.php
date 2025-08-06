@@ -22,15 +22,15 @@ class MeetingAttendeePolicy
 
     public function create(User $user)
     {
-        return $user->role_id === 1;
+        return  true ; 
     }
-     public function update(User $user)
+     public function update(User $user,MeetingAttendee $attendee)
     {
-        return $user->role_id === 1;
+      return $user->id === $attendee->user_id || $user->role_id === 1;
     }
 
     public function delete(User $user, MeetingAttendee $attendee)
     {
-        return $user->role_id === 1;
+      return $user->id === $attendee->user_id || $user->role_id === 1;
     }
 }
