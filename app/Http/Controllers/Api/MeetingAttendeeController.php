@@ -78,4 +78,51 @@ class MeetingAttendeeController extends Controller
         $meetingattendee->delete();
         return response()->json(['message' => 'Meeting attendee deleted successfully']);
     }
+    public function subscribe(Request $request): JsonResponse
+{
+    $request->validate([
+        'meeting_id' => 'required|exists:meetings,id',
+    ]);
+
+    $user = $request->user();
+
+    // Prevent duplicate subscription
+    $existing = \App\Models\MeetingAttendee::where('user_id', $user->id)
+                ->where('meeting_id', $request->meeting_id)
+                ->first();
+
+    if ($existing) {
+        return response()->json(['message' => 'Already subscribed'], 409);
+    }
+
+    $attendee = \App\Models\MeetingAttendee::create([
+        'user_id' => $user->id,
+        'meeting_id' => $request->meeting_id,
+        'status' => 'attended'
+    ]);
+
+    return response()->json($attendee, 201);
+}
+
+public function unsubscribe(Request $request): JsonResponse
+{
+    $request->validate([
+        'meeting_id' => 'required|exists:meetings,id',
+    ]);
+
+    $user = $request->user();
+
+    $attendee = \App\Models\MeetingAttendee::where('user_id', $user->id)
+                ->where('meeting_id', $request->meeting_id)
+                ->first();
+
+    if (!$attendee) {
+        return response()->json(['message' => 'Not subscribed'], 404);
+    }
+
+    $attendee->delete();
+
+    return response()->json(['message' => 'Unsubscribed successfully']);
+}
+
 }

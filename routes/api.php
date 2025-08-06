@@ -24,6 +24,8 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Protected routes (require Sanctum token)
 Route::middleware('auth:sanctum' )->group(function () {
+    Route::post('/meetings/subscribe', [MeetingAttendeeController::class, 'subscribe']);
+    Route::post('/meetings/unsubscribe', [MeetingAttendeeController::class, 'unsubscribe']);
     Route::apiResource('users', UserController::class);
     Route::apiResource('roles', RoleController::class);
     Route::apiResource('rooms', RoomController::class);
