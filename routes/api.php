@@ -34,7 +34,7 @@ Route::middleware('auth:sanctum' )->group(function () {
     Route::apiResource('minutes', MinuteController::class);
     Route::apiResource('tasks', TaskController::class);
     Route::apiResource('fileattachments', FileAttachmentController::class);
-
+    Route::get('/me', [AuthController::class, 'me']);
     // Optional logout
     Route::post('/logout', [AuthController::class, 'logout']);
 });
