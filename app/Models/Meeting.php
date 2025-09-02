@@ -47,4 +47,9 @@ class Meeting extends Model
     return $this->hasMany(FileAttachment::class);
 }
 
+public function getEndTimeAttribute()
+{
+    return Carbon::parse($this->date)->addMinutes($this->duration);
+}
+
 }

@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Meeting;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\Room;
 
     class MeetingController extends Controller
 {
@@ -21,27 +22,40 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
     }
 
     // Store a new meeting
-    public function store(Request $request): JsonResponse
-    {
+// In your MeetingController store method
 
-        $this->authorize('create', Meeting::class);
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'target_audience' => 'nullable|string',
-            'date' => 'required|date',
-            'duration' => 'required',
-            'room_id' => 'required|exists:rooms,id',
-            'user_id' => 'required|exists:users,id',
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+public function store(Request $request)
+{
 
-        $meeting = Meeting::create($validator->validated());
-        return response()->json($meeting, 201);
-    }
+
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'date' => 'required|date',
+        'duration' => 'required|integer|min:15|max:480',
+        'room_id' => 'required|exists:rooms,id',
+        'user_id' => 'required|exists:users,id'
+    ]);
+
+    // Convert minutes → HH:MM:SS
+    $hours = floor($validated['duration'] / 60);
+    $minutes = $validated['duration'] % 60;
+    $validated['duration'] = sprintf('%02d:%02d:00', $hours, $minutes);
+
+    $meeting = Meeting::create($validated);
+
+    // ✅ Mark the room unavailable BEFORE return
+    Room::where('id', $meeting->room_id)->update(['status' => 'unavailable']);
+
+    return response()->json([
+        'message' => 'Meeting created successfully',
+        'data' => $meeting
+    ], 201);
+}
+
+    // Mark the room as unavailable
+    
 
     // Show a single meeting
     public function show(Meeting $meeting): JsonResponse
@@ -62,7 +76,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
             'room_id' => 'sometimes|required|exists:rooms,id',
             'user_id' => 'sometimes|required|exists:users,id',
         ]);
-
+        $meeting->room->update(['status' => 'unavailable']);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
