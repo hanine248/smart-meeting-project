@@ -17,6 +17,12 @@ class MinuteController extends Controller
         $this->authorize('viewAny', Minute::class);
         return response()->json(Minute::with('meeting')->get());
     }
+    public function getByMeeting($meetingId): JsonResponse
+{
+    $minutes = Minute::where('meeting_id', $meetingId)->get();
+    return response()->json($minutes);
+}
+
 
     public function store(Request $request): JsonResponse
     {

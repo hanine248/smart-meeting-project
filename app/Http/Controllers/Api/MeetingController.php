@@ -16,7 +16,7 @@ use App\Models\Room;
     // List all meetings
     public function index(): JsonResponse
     {
-        this->authorize('viewAny',Meeting::class);
+        $this->authorize('viewAny',Meeting::class);
         $meetings = Meeting::with(['room', 'user', 'attendees.user', 'minute', 'tasks'])->get();
         return response()->json($meetings);
     }
@@ -64,33 +64,63 @@ public function store(Request $request)
     }
 
     // Update a meeting
-    public function update(Request $request, Meeting $meeting): JsonResponse
-    {
-         $this->authorize('update', $meeting );
-        $validator = Validator::make($request->all(), [
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'target_audience' => 'nullable|string',
-            'date' => 'sometimes|required|date',
-            'duration' => 'sometimes|required',
-            'room_id' => 'sometimes|required|exists:rooms,id',
-            'user_id' => 'sometimes|required|exists:users,id',
-        ]);
-        $meeting->room->update(['status' => 'unavailable']);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+   public function update(Request $request, Meeting $meeting): JsonResponse
+{
+    $this->authorize('update', $meeting);
 
-        $meeting->update($validator->validated());
-        return response()->json($meeting);
+    $validator = Validator::make($request->all(), [
+        'title' => 'sometimes|required|string|max:255',
+        'description' => 'nullable|string',
+        'target_audience' => 'nullable|string',
+        'date' => 'sometimes|required|date',
+        'duration' => 'sometimes|required|integer|min:15|max:480',
+        'room_id' => 'sometimes|required|exists:rooms,id',
+        'user_id' => 'sometimes|required|exists:users,id',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+    $data = $validator->validated();
+
+    // ✅ Convert duration (minutes → HH:MM:SS) if provided
+    if (isset($data['duration'])) {
+        $hours = floor($data['duration'] / 60);
+        $minutes = $data['duration'] % 60;
+        $data['duration'] = sprintf('%02d:%02d:00', $hours, $minutes);
+    }
+
+    // ✅ Handle room change
+    if (isset($data['room_id']) && $data['room_id'] != $meeting->room_id) {
+        // Make old room available
+        Room::where('id', $meeting->room_id)->update(['status' => 'available']);
+        // Make new room unavailable
+        Room::where('id', $data['room_id'])->update(['status' => 'unavailable']);
+    }
+
+    $meeting->update($data);
+
+    return response()->json([
+        'message' => 'Meeting updated successfully',
+        'data' => $meeting
+    ]);
+}
 
     // Delete a meeting
     public function destroy(Meeting $meeting): JsonResponse
-    {
-         $this->authorize('delete', $meeting);
-        $meeting->delete();
-        return response()->json(['message' => 'Meeting deleted successfully']);
-    }
+{
+    $this->authorize('delete', $meeting);
+
+    // ✅ Make the room available again before deleting the meeting
+    Room::where('id', $meeting->room_id)->update(['status' => 'available']);
+
+    $meeting->delete();
+
+    return response()->json([
+        'message' => 'Meeting deleted successfully'
+    ]);
+}
+
 }
 

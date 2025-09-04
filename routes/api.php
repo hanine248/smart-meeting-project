@@ -21,15 +21,16 @@ Route::get('/hello', function () {
 // Public routes (do not require token)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::apiResource('meetings', MeetingController::class);
+
 // Protected routes (require Sanctum token)
 Route::middleware('auth:sanctum' )->group(function () {
+    Route::get('/meetings/{id}/minutes', [MinuteController::class, 'getByMeeting']);
     Route::post('/meetings/subscribe', [MeetingAttendeeController::class, 'subscribe']);
     Route::post('/meetings/unsubscribe', [MeetingAttendeeController::class, 'unsubscribe']);
     Route::apiResource('users', UserController::class);
     Route::apiResource('roles', RoleController::class);
     Route::apiResource('rooms', RoomController::class);
-    
+    Route::apiResource('meetings', MeetingController::class);
     Route::apiResource('meetingattendees', MeetingAttendeeController::class);
     Route::apiResource('minutes', MinuteController::class);
     Route::apiResource('tasks', TaskController::class);
