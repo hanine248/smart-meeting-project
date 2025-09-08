@@ -27,6 +27,17 @@ Route::middleware('auth:sanctum' )->group(function () {
     Route::get('/meetings/{id}/minutes', [MinuteController::class, 'getByMeeting']);
     Route::post('/meetings/subscribe', [MeetingAttendeeController::class, 'subscribe']);
     Route::post('/meetings/unsubscribe', [MeetingAttendeeController::class, 'unsubscribe']);
+   Route::get('/meetings/{id}', [MeetingController::class, 'showbyid']);
+// routes/api.php
+Route::post('/meetings/{id}/attendees', [MeetingAttendeeController::class, 'storeForMeeting']);
+// routes/api.php
+Route::put('/attendees/{id}', [MeetingAttendeeController::class, 'update']);
+Route::delete('/attendees/{id}', [MeetingAttendeeController::class, 'destroy']);
+Route::get('/meetings/{id}/attachments', [FileAttachmentController::class, 'index']);
+Route::post('/meetings/{id}/attachments', [FileAttachmentController::class, 'store']);
+Route::delete('/attachments/{fileattachment}', [FileAttachmentController::class, 'destroy']);
+Route::get('/rooms/{id}/meetings', [RoomController::class, 'getMeetings']);
+
     Route::apiResource('users', UserController::class);
     Route::apiResource('roles', RoleController::class);
     Route::apiResource('rooms', RoomController::class);

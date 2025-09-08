@@ -59,14 +59,15 @@ class FileAttachmentController extends Controller
     }
 
     public function destroy(FileAttachment $fileattachment): JsonResponse
-    {
-        $this->authorize('delete', $fileattachment);
+{
+    $this->authorize('delete', $fileattachment);
 
-        if (Storage::disk('public')->exists($fileattachment->file_path)) {
-            Storage::disk('public')->delete($fileattachment->file_path);
-        }
-
-        $fileattachment->delete();
-        return response()->json(['message' => 'File deleted successfully']);
+    if ($fileattachment->path && Storage::disk('public')->exists($fileattachment->path)) {
+        Storage::disk('public')->delete($fileattachment->path);
     }
+
+    $fileattachment->delete();
+    return response()->json(['message' => 'File deleted successfully']);
+}
+
 }

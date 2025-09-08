@@ -8,8 +8,9 @@ class Room extends Model
 {
     protected $fillable = ['status', 'location', 'feature', 'capacity'];
 
-    public function meetings(): HasMany
-    {
-        return $this->hasMany(Meeting::class);
-    }
+  public function meetings()
+{
+    return $this->hasMany(Meeting::class);
+}
+
 }

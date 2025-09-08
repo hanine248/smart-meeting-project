@@ -11,10 +11,20 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class RoomController extends Controller
 {
      use AuthorizesRequests;
-    public function index(): JsonResponse
-    {
-        return response()->json(Room::all());
-    }
+ public function index()
+{
+    $rooms = Room::with(['meetings' => function($q) {
+        $q->whereDate('date', '>=', now()->toDateString());
+    }])->get();
+
+    return response()->json($rooms);
+}
+
+public function getMeetings($id)
+{
+    $room = Room::with('meetings')->findOrFail($id);
+    return response()->json($room->meetings);
+}
 
     public function store(Request $request): JsonResponse
     {

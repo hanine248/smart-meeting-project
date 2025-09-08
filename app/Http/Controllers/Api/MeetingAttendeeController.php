@@ -17,6 +17,34 @@ class MeetingAttendeeController extends Controller
         $this->authorize('viewAny', MeetingAttendee::class);
         return response()->json(MeetingAttendee::with(['user', 'meeting'])->get());
     }
+public function storeForMeeting(Request $request, $meetingId): JsonResponse
+{
+    // 👨‍💼 Admin adds user to a meeting
+    $validator = Validator::make($request->all(), [
+        'user_id' => 'required|exists:users,id',
+        'status' => 'nullable|in:attended,absent',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    $exists = MeetingAttendee::where('user_id', $request->user_id)
+        ->where('meeting_id', $meetingId)
+        ->exists();
+
+    if ($exists) {
+        return response()->json(['message' => 'Already subscribed'], 409);
+    }
+
+    $attendee = MeetingAttendee::create([
+        'user_id' => $request->user_id,
+        'meeting_id' => $meetingId,
+        'status' => $request->status ?? 'attended', // ✅ default to attended
+    ]);
+
+    return response()->json($attendee, 201);
+}
 
    public function store(Request $request): JsonResponse
 {
@@ -54,30 +82,31 @@ class MeetingAttendeeController extends Controller
         $this->authorize('view', $meetingattendee);
         return response()->json($meetingattendee->load(['user', 'meeting']));
     }
+public function update(Request $request, $id): JsonResponse
+{
+    $meetingattendee = MeetingAttendee::findOrFail($id);
 
-    public function update(Request $request, MeetingAttendee $meetingattendee): JsonResponse
-    {
-        $this->authorize('update', $meetingattendee);
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'sometimes|required|exists:users,id',
-            'meeting_id' => 'sometimes|required|exists:meetings,id',
-            'status' => 'sometimes|required|in:attended,absent',
-        ]);
+    $validator = Validator::make($request->all(), [
+        'status' => 'required|in:attended,absent',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $meetingattendee->update($validator->validated());
-        return response()->json($meetingattendee);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
 
-    public function destroy(MeetingAttendee $meetingattendee): JsonResponse
-    {
-        $this->authorize('delete', $meetingattendee);
-        $meetingattendee->delete();
-        return response()->json(['message' => 'Meeting attendee deleted successfully']);
-    }
+    $meetingattendee->update($validator->validated());
+
+    return response()->json($meetingattendee);
+}
+
+public function destroy($id): JsonResponse
+{
+    $meetingattendee = MeetingAttendee::findOrFail($id);
+    $meetingattendee->delete();
+
+    return response()->json(['message' => 'Meeting attendee deleted successfully']);
+}
+
     public function subscribe(Request $request): JsonResponse
 {
     $request->validate([

@@ -15,7 +15,8 @@ use App\Models\FileAttachment;
 class Meeting extends Model
 {
     protected $fillable = [
-        'title', 'description', 'target_audience', 'date', 'duration', 'room_id', 'user_id'
+        'title', 'description', 'target_audience', 'date',   'time',   
+         'link',  'duration', 'room_id', 'user_id'
     ];
 
     public function room(): BelongsTo
